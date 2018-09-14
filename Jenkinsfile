@@ -1,9 +1,10 @@
 pipeline {
   agent any
   stages {
-    stage('test') {
+    stage('build') {
       steps {
-        echo 'Hello jammers'
+        sh './jenkins/build.sh'
+        archiveArtifacts 'target/*.jar'
       }
     }
   }
