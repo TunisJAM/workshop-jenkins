@@ -1,0 +1,44 @@
+pipeline {
+  agent any
+  stages {
+    stage('sleep') {
+      steps {
+        echo 'test stage'
+        sh 'sleep 5'
+      }
+    }
+    stage('test') {
+      steps {
+        sh 'echo testing phase'
+      }
+    }
+    stage('app build') {
+      steps {
+        sh './jenkins/build.sh'
+        archiveArtifacts 'target/*.jar'
+      }
+    }
+    stage('app test') {
+      parallel {
+        stage('backend') {
+          steps {
+            sh './jenkins/test-backend.sh'
+            junit 'target/surefire-reports/**/TEST*.xml'
+          }
+        }
+        stage('frontend') {
+          steps {
+            sh './jenkins/test-frontend.sh'
+            junit 'target/test-results/**/TEST*.xml'
+          }
+        }
+      }
+    }
+    stage('app deploy') {
+      steps {
+        echo 'deploying application'
+        sh './jenkins/deploy.sh deploying'
+      }
+    }
+  }
+}
